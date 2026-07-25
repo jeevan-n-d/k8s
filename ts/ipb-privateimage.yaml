@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-private
+  labels:
+    env: demo
+    type: frontend
+spec:
+  containers:
+  - name: ngnix-containe-private
+    image: jeeva08raj/twitter:v8
+    ports:
+    - containerPort: 80
+
+  imagePullSecrets:
+  - name: docker-secret

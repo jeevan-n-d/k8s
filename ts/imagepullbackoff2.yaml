@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-jeeva-testing
+  labels:
+    env: demo
+    type: frontend
+spec:
+  containers:
+  - name: ngnix-container-jeeva08-testing
+    image: jeeva08raj/nodejs
+    ports:
+    - containerPort: 80
+
