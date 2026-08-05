@@ -1,4 +1,4 @@
-I deploy the new version alongside the existing version. Each version has its own Deployment and Service. Then I configure an Ingress controller or a service mesh to route a small percentage of traffic, such as 10%, to the new version. After monitoring the application's health and performance, I gradually increase the traffic to 30%, 50%, and eventually 100%. If any issues are detected, I immediately route all traffic back to the old version.
+Interview answer -- I deploy the new version alongside the existing version. Each version has its own Deployment and Service. Then I configure an Ingress controller or a service mesh to route a small percentage of traffic, such as 10%, to the new version. After monitoring the application's health and performance, I gradually increase the traffic to 30%, 50%, and eventually 100%. If any issues are detected, I immediately route all traffic back to the old version.
 
 # Canary Deployment with NGINX Ingress Controller
 
