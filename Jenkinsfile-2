@@ -1,0 +1,108 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Git ') {
+            steps {
+                git branch: 'main', credentialsId: 'github-cred', url: 'https://github.com/jeevan-n-d/twitter.git'
+            }
+            
+             steps {
+                sh 'mvn clean compile'
+            }
+            
+             steps {
+                sh 'mvn test'
+            }
+            
+            steps {
+                sh 'trivy fs --severity HIGH,CRITICAL --exit-code 1  --format json -o trivy-fs-report.json'
+            }
+            
+            
+            steps{
+                withSonarQubeEnv(credentialsId: 'sonar-server') {
+                    sh ''' 
+                    -Dsonar.projectName=sampleapp
+                    -Dsonar.projectkey=samplekey
+                    -Dsonar.java.binaries=target/classes
+                    '''
+                    }
+                }
+                
+                
+                steps{
+                    sh ' mvn build'
+                }
+                
+                
+                steps{
+                    withMaven(globalMavenSettingsConfig: 'maven-settings', jdk: 'jdk17', maven: 'maven', traceability: true) {
+                    sh 'mvn deploy'
+                    }
+                }
+                
+                
+    
+            
+        }
+
+            
+            stage('Build'){
+                agent { label 'master' } 
+                
+                
+                steps{
+                   sh ' docker build -t jeeva08raj/twitter:v01 .'
+               }
+               
+               steps{
+                    sh ' trivy image --format json -o trivy-image.json  jeeva08raj/twitter:v01' 
+                }
+                
+               
+                steps {
+                withDockerRegistry([url: '',credentialsId: 'docker-cred-'
+                ]) {
+                    sh 'docker push jeeva08raj/twitter:release-9'
+                    }
+                }
+                
+                steps {
+                withKubeConfig(
+                    credentialsId: 'k8-cred',
+                    clusterName: 'myproject-cluster',
+                    namespace: 'webapps',
+                    serverUrl: 'https://A74ABA61A44FD3CF52187DE0EF039CDC.gr7.ap-south-1.eks.amazonaws.com'
+                ) {
+                    sh "kubectl get pods -n app"
+                    sh "kubectl get svc -n app"
+                }
+            }
+            
+    }
+}
+
+
+    post{
+        always{
+            def pipelineStatus = currentBuild.currentResult
+            def body = '''
+            <!DOCTYPE html>
+            <html lang="en">
+            <body>
+            <h1>Pipeline build is : ${pipelineStatus}</h1>
+            </body>
+            </html>'''
+            
+            
+            emailext(
+                    subject: "Jenkins build",
+                    body: body,
+                    to: "jeevanrajeshgowda@gmail.com",
+                    from: "rockrollno121@gmail.com",
+                    replyTo: "4ra22cs040@rithassan.ac.in",
+                    mimeType: "text/html"
+                )
+        }
+    }
